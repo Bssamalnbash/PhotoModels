@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق الموديلات المحسن</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Tajawal', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1a237e;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #3949ab;
+        }
+        
+        /* أزرار التحكم */
+        .controls {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 180px;
+            justify-content: center;
+            background: #3949ab;
+            color: white;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: #303f9f;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-whatsapp {
+            background: #25D366;
+        }
+        
+        .btn-whatsapp:hover {
+            background: #1da851;
+        }
+        
+        .btn-danger {
+            background: #f44336;
+        }
+        
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+        
+        /* منطقة عرض الصور */
+        .images-container {
+            min-height: 400px;
+            background: #f8f8f8;
+            border-radius: 15px;
+            padding: 20px;
+            border: 3px dashed #ddd;
+        }
+        
+        /* عندما لا توجد صور */
+        .no-images {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            font-size: 18px;
+        }
+        
+        /* شبكة عرض الصور */
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 20px;
+        }
+        
+        /* بطاقة الصورة */
+        .image-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .image-card:hover {
+            border-color: #3949ab;
+            transform: translateY(-5px);
+        }
+        
+        .image-card.selected {
+            border-color: #25D366;
+            border-width: 3px;
+            box-shadow: 0 0 15px rgba(37, 211, 102, 0.3);
+        }
+        
+        /* زر التحديد */
+        .select-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .select-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: #25D366;
+        }
+        
+        .select-label {
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        /* رأس البطاقة */
+        .card-header {
+            background: #3949ab;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+        
+        .card-number {
+            font-size: 24px;
+            font-weight: bold;
+            background: white;
+            color: #3949ab;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .delete-btn {
+            background: #ff5252;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            position: absolute;
+            left: 15px;
+            top: 15px;
+        }
+        
+        .delete-btn:hover {
+            background: #ff1744;
+        }
+        
+        /* جسم البطاقة */
+        .card-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        /* حقلين: الرمز والسعر */
+        .input-row {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+        
+        .input-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .input-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: bold;
+        }
+        
+        .model-input, .price-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #bdbdbd;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        
+        .model-input {
+            text-align: center;
+            background: #e8f5e9;
+        }
+        
+        .price-input {
+            text-align: center;
+            background: #e3f2fd;
+        }
+        
+        .model-input:focus, .price-input:focus {
+            border-color: #3949ab;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(57, 73, 171, 0.2);
+        }
+        
+        /* منطقة الصورة */
+        .image-area {
+            width: 100%;
+            height: 200px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            background: #f5f5f5;
+        }
+        
+        .image-area img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        
+        /* الفوتر */
+        .footer {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        /* شريط التقدم */
+        .progress-container {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #4CAF50;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        /* رسائل التنبيه */
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert.error {
+            background: #f44336;
+        }
+        
+        .alert.info {
+            background: #2196F3;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* نافذة الواتساب */
+        .whatsapp-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .whatsapp-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .whatsapp-header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #25D366;
+        }
+        
+        .whatsapp-header h2 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .whatsapp-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .whatsapp-option {
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .whatsapp-option:hover {
+            border-color: #25D366;
+            background: #f0fff4;
+        }
+        
+        .whatsapp-option.selected {
+            border-color: #25D366;
+            background: #e8f5e9;
+        }
+        
+        .whatsapp-option-icon {
+            font-size: 24px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #25D366;
+            color: white;
+        }
+        
+        .whatsapp-details {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .phone-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .phone-input-group label {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .phone-input {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            direction: ltr;
+            text-align: left;
+        }
+        
+        .phone-input:focus {
+            border-color: #25D366;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.2);
+        }
+        
+        .whatsapp-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .whatsapp-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .whatsapp-btn-send {
+            background: #25D366;
+            color: white;
+        }
+        
+        .whatsapp-btn-send:hover {
+            background: #1da851;
+        }
+        
+        .whatsapp-btn-cancel {
+            background: #757575;
+            color: white;
+        }
+        
+        .whatsapp-btn-cancel:hover {
+            background: #616161;
+        }
+        
+        /* الكاميرا */
+        .camera-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .camera-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            width: 90%;
+            max-width: 800px;
+        }
+        
+        .camera-preview {
+            width: 100%;
+            height: 400px;
+            background: black;
+        }
+        
+        #cameraVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .camera-controls {
+            padding: 20px;
+            background: #333;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .camera-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* زر تحديد الكل */
+        .select-all-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: auto;
+            padding: 10px 20px;
+            background: white;
+            border-radius: 10px;
+        }
+        
+        /* حقل البحث */
+        .search-container {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-right: 10px;
+        }
+        
+        .search-container input {
+            border: none;
+            outline: none;
+            font-size: 14px;
+            width: 180px;
+            background: transparent;
+        }
+        
+        .search-container input:focus {
+            background: transparent;
+        }
+        
+        /* تحسين عرض جهات الاتصال */
+        .contact-picker-btn {
+            width: 100%;
+            padding: 12px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .contact-picker-btn:hover {
+            background: #0b7dda;
+        }
+        
+        @media (max-width: 768px) {
+            .images-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn {
+                min-width: 150px;
+            }
+            
+            .stats {
+                justify-content: center;
+            }
+            
+            .input-row {
+                flex-direction: column;
+            }
+            
+            .select-container {
+                top: 5px;
+                right: 5px;
+            }
+            
+            .delete-btn {
+                left: 5px;
+                top: 5px;
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            
+            .search-container {
+                width: 100%;
+                justify-content: center;
+                margin-top: 10px;
+                margin-right: 0;
+            }
+            
+            .select-all-container {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <h1>📷 تطبيق الموديلات المحسن</h1>
+        
+        <!-- أزرار التحكم -->
+        <div class="controls">
+            <button class="btn" onclick="uploadMultipleImages()">
+                📁 رفع صور من الاستديو
+            </button>
+            <button class="btn" onclick="openCamera()">
+                📸 التقاط صورة بالكاميرا
+            </button>
+            <button class="btn btn-whatsapp" onclick="openWhatsAppOptions()" id="whatsappBtn" disabled>
+                📤 إرسال عبر واتساب
+            </button>
+            <button class="btn btn-danger" onclick="clearAll()">
+                🗑️ مسح الكل
+            </button>
+            
+            <!-- حقل البحث -->
+            <div class="search-container">
+                <span style="color: #3949ab; margin-left: 8px;">🔍</span>
+                <input type="text" id="searchInput" placeholder="ابحث برمز الموديل..." 
+                       oninput="searchByCode(this.value)">
+            </div>
+            
+            <!-- تحديد الكل -->
+            <div class="select-all-container">
+                <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                <label for="selectAll" style="font-weight: bold; color: #3949ab;">تحديد الكل</label>
+            </div>
+        </div>
+        
+        <!-- شريط التقدم -->
+        <div id="progressContainer" class="progress-container">
+            <div id="progressText">جاري رفع الصور...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+        
+        <!-- منطقة عرض الصور -->
+        <div class="images-container">
+            <div id="noImages" class="no-images">
+                <div style="font-size: 48px; margin-bottom: 20px;">📷</div>
+                <div style="font-size: 20px; margin-bottom: 10px; color: #3949ab;">لم يتم رفع أي صور بعد</div>
+                <div style="font-size: 16px; color: #666;">استخدم الأزرار أعلاه لرفع الصور أو التقاطها بالكاميرا</div>
+            </div>
+            
+            <div class="images-grid" id="imagesGrid">
+                <!-- الصور تضاف هنا تلقائياً -->
+            </div>
+        </div>
+        
+        <!-- الفوتر -->
+        <div class="footer">
+            <div class="stats">
+                <div class="stat-item">
+                    <span style="font-weight: bold; color: #3949ab;">البطاقات:</span>
+                    <span id="cardsCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span style="font-weight: bold; color: #3949ab;">الصور:</span>
+                    <span id="imagesCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span style="font-weight: bold; color: #3949ab;">المحدد:</span>
+                    <span id="selectedCount">0</span>
+                </div>
+            </div>
+            <div style="color: #666; font-size: 14px;">
+                © تطبيق الموديلات المحسن
+            </div>
+        </div>
+    </div>
+    
+    <!-- نافذة الواتساب -->
+    <div id="whatsappModal" class="whatsapp-modal">
+        <div class="whatsapp-container">
+            <div class="whatsapp-header">
+                <h2><span style="color: #25D366;">📤</span> إرسال عبر واتساب</h2>
+                <p>اختر طريقة الإرسال المناسبة</p>
+            </div>
+            
+            <div class="whatsapp-options">
+                <div class="whatsapp-option" onclick="selectWhatsAppOption('text')" id="optionText">
+                    <div class="whatsapp-option-icon">📝</div>
+                    <div>
+                        <h3>إرسال كرسالة نصية</h3>
+                        <p>إرسال الرموز والأسعار كرسالة نصية في واتساب</p>
+                    </div>
+                </div>
+                
+                <div class="whatsapp-option" onclick="selectWhatsAppOption('phone')" id="optionPhone">
+                    <div class="whatsapp-option-icon">📱</div>
+                    <div>
+                        <h3>إرسال مباشر إلى رقم</h3>
+                        <p>إرسال مباشر إلى رقم واتساب محدد</p>
+                    </div>
+                </div>
+                
+                <div class="whatsapp-option" onclick="selectWhatsAppOption('contact')" id="optionContact">
+                    <div class="whatsapp-option-icon">👥</div>
+                    <div>
+                        <h3>اختيار من جهات الاتصال</h3>
+                        <p>اختر جهة اتصال من دفتر العناوين في هاتفك</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- تفاصيل إرسال إلى رقم -->
+            <div class="whatsapp-details" id="phoneDetails">
+                <div class="phone-input-group">
+                    <label for="phoneNumber">📱 رقم واتساب الهدف</label>
+                    <input type="tel" id="phoneNumber" class="phone-input" 
+                           placeholder="9665XXXXXXXX" dir="ltr">
+                    <small style="color: #666; font-size: 12px;">
+                        أدخل الرقم مع كود الدولة (مثال: 9665XXXXXXXX لـ السعودية)
+                    </small>
+                </div>
+                
+                <div class="phone-input-group">
+                    <label for="whatsappMessage">💬 نص الرسالة (اختياري)</label>
+                    <textarea id="whatsappMessage" class="phone-input" rows="4" 
+                              placeholder="أهلاً، هذه هي الموديلات المطلوبة..."></textarea>
+                </div>
+            </div>
+            
+            <!-- تفاصيل جهات الاتصال -->
+            <div class="whatsapp-details" id="contactDetails">
+                <div class="phone-input-group">
+                    <label for="selectedContactName">👤 جهة الاتصال المحددة</label>
+                    <input type="text" id="selectedContactName" class="phone-input" readonly 
+                           placeholder="لم يتم اختيار أي جهة اتصال">
+                    <input type="hidden" id="selectedContactPhone">
+                </div>
+                <button class="btn" onclick="pickContactFromPhone()" 
+                        style="background: #2196F3; margin-top: 10px;">
+                    👥 اختر من جهات الاتصال
+                </button>
+            </div>
+            
+            <div class="whatsapp-controls">
+                <button class="whatsapp-btn whatsapp-btn-cancel" onclick="closeWhatsAppModal()">
+                    ✕ إلغاء
+                </button>
+                <button class="whatsapp-btn whatsapp-btn-send" onclick="sendViaWhatsApp()" id="sendWhatsAppBtn">
+                    📤 إرسال الآن
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- نافذة الكاميرا -->
+    <div id="cameraModal" class="camera-modal">
+        <div class="camera-container">
+            <div class="camera-preview">
+                <video id="cameraVideo" autoplay playsinline></video>
+            </div>
+            <div class="camera-controls">
+                <button class="camera-btn" onclick="capturePhoto()" style="background: #4CAF50; color: white;">
+                    📸 التقاط صورة
+                </button>
+                <button class="camera-btn" onclick="closeCamera()" style="background: #f44336; color: white;">
+                    ✕ إغلاق الكاميرا
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- مدخل ملفات مخفي -->
+    <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+    
+    <script>
+        // متغيرات التطبيق
+        let currentCardId = 0;
+        let cameraStream = null;
+        let selectedWhatsAppOption = 'text';
+        let selectedCards = new Set();
+        
+        // تحديث الإحصائيات
+        function updateStats() {
+            const cards = document.querySelectorAll('.image-card');
+            const images = document.querySelectorAll('.image-area img');
+            const selected = document.querySelectorAll('.image-card.selected').length;
+            
+            document.getElementById('cardsCount').textContent = cards.length;
+            document.getElementById('imagesCount').textContent = images.length;
+            document.getElementById('selectedCount').textContent = selected;
+            
+            // إخفاء رسالة "لا توجد صور" إذا كان هناك بطاقات
+            const noImages = document.getElementById('noImages');
+            noImages.style.display = cards.length > 0 ? 'none' : 'block';
+            
+            // تفعيل زر الواتساب إذا كانت هناك بطاقات محددة
+            document.getElementById('whatsappBtn').disabled = selected === 0;
+            
+            // تحديث زر تحديد الكل
+            const selectAllCheckbox = document.getElementById('selectAll');
+            selectAllCheckbox.checked = selected === cards.length && cards.length > 0;
+            
+            // حفظ البيانات
+            saveData();
+            
+            // إعادة ترقيم البطاقات
+            renumberCards();
+        }
+        
+        // إعادة ترقيم البطاقات
+        function renumberCards() {
+            const cards = document.querySelectorAll('.image-card');
+            cards.forEach((card, index) => {
+                const cardId = card.id.replace('card-', '');
+                const numberElement = card.querySelector('.card-number');
+                if (numberElement) {
+                    numberElement.textContent = index + 1;
+                }
+                
+                // تحديث أحداث البطاقة
+                const modelInput = card.querySelector('.model-input');
+                const priceInput = card.querySelector('.price-input');
+                const checkbox = card.querySelector('.select-checkbox');
+                
+                if (modelInput) {
+                    modelInput.setAttribute('oninput', `updateCode(${cardId}, this.value)`);
+                }
+                if (priceInput) {
+                    priceInput.setAttribute('oninput', `updatePrice(${cardId}, this.value)`);
+                }
+                if (checkbox) {
+                    checkbox.setAttribute('onchange', `toggleCardSelection(${cardId}, this.checked)`);
+                }
+                
+                // تحديث زر الحذف
+                const deleteBtn = card.querySelector('.delete-btn');
+                if (deleteBtn) {
+                    deleteBtn.setAttribute('onclick', `deleteCard(${cardId})`);
+                }
+            });
+        }
+        
+        // إنشاء بطاقة جديدة
+        function createCard(cardId, imageUrl, fileName = '') {
+            const card = document.createElement('div');
+            card.className = 'image-card';
+            card.id = 'card-' + cardId;
+            
+            card.innerHTML = `
+                <div class="select-container">
+                    <span class="select-label">تحديد</span>
+                    <input type="checkbox" class="select-checkbox" onchange="toggleCardSelection(${cardId}, this.checked)">
+                </div>
+                <div class="card-header">
+                    <div class="card-number">${cardId}</div>
+                    <button class="delete-btn" onclick="deleteCard(${cardId})">
+                        🗑️ حذف
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label class="input-label">رمز الموديل</label>
+                            <input type="text" class="model-input" placeholder="أدخل الرمز..." 
+                                   oninput="updateCode(${cardId}, this.value)">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">السعر</label>
+                            <input type="text" class="price-input" placeholder="أدخل السعر..." 
+                                   oninput="updatePrice(${cardId}, this.value)">
+                        </div>
+                    </div>
+                    <div class="image-area">
+                        <img src="${imageUrl}" alt="صورة المنتج" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2Y1ZjVmNSIvPjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='">
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // رفع صور متعددة
+        function uploadMultipleImages() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.multiple = true;
+            
+            input.onchange = function(e) {
+                const files = e.target.files;
+                if (!files || files.length === 0) return;
+                
+                // إظهار شريط التقدم
+                document.getElementById('progressContainer').style.display = 'block';
+                document.getElementById('progressText').textContent = `جاري معالجة ${files.length} صورة...`;
+                document.getElementById('progressFill').style.width = '0%';
+                
+                // معالجة كل صورة
+                const processImage = (index) => {
+                    if (index >= files.length) {
+                        // انتهاء المعالجة
+                        setTimeout(() => {
+                            document.getElementById('progressContainer').style.display = 'none';
+                            showAlert(`تم معالجة ${files.length} صورة بنجاح!`);
+                        }, 500);
+                        return;
+                    }
+                    
+                    const file = files[index];
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(event) {
+                        try {
+                            // إضافة بطاقة جديدة
+                            addNewCard(event.target.result, file.name);
+                            
+                            // تحديث شريط التقدم
+                            const progress = Math.round(((index + 1) / files.length) * 100);
+                            document.getElementById('progressFill').style.width = progress + '%';
+                            document.getElementById('progressText').textContent = 
+                                `جاري معالجة الصور... ${index + 1}/${files.length}`;
+                            
+                            // معالجة الصورة التالية بعد تأخير
+                            setTimeout(() => processImage(index + 1), 100);
+                            
+                        } catch (error) {
+                            console.error('خطأ في معالجة الصورة:', error);
+                            showAlert('حدث خطأ في معالجة إحدى الصور', 'error');
+                            processImage(index + 1);
+                        }
+                    };
+                    
+                    reader.onerror = function() {
+                        console.error('خطأ في قراءة الملف:', file.name);
+                        showAlert(`خطأ في قراءة الصورة: ${file.name}`, 'error');
+                        processImage(index + 1);
+                    };
+                    
+                    try {
+                        reader.readAsDataURL(file);
+                    } catch (error) {
+                        console.error('خطأ في قراءة الملف كـ DataURL:', error);
+                        showAlert(`خطأ في معالجة الصورة: ${file.name}`, 'error');
+                        processImage(index + 1);
+                    }
+                };
+                
+                // بدء المعالجة من الصورة الأولى
+                processImage(0);
+            };
+            
+            input.click();
+        }
+        
+        // ضغط الصورة لتقليل الحجم
+        function compressImage(imageUrl, maxWidth = 800, quality = 0.7) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.src = imageUrl;
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // حساب الأبعاد الجديدة
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // رسم الصورة على الكانفاس بالأبعاد الجديدة
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // الحصول على الصورة مضغوطة
+                    const compressedImageUrl = canvas.toDataURL('image/jpeg', quality);
+                    resolve(compressedImageUrl);
+                };
+                img.onerror = function() {
+                    // إذا فشل الضغط، نستخدم الصورة الأصلية
+                    resolve(imageUrl);
+                };
+            });
+        }
+        
+        // إضافة بطاقة جديدة مع ضغط الصورة
+        async function addNewCard(imageUrl, fileName = '') {
+            try {
+                // ضغط الصورة لتقليل حجم التخزين
+                let compressedImageUrl = imageUrl;
+                try {
+                    compressedImageUrl = await compressImage(imageUrl);
+                    console.log('تم ضغط الصورة');
+                } catch (error) {
+                    console.warn('تعذر ضغط الصورة، سيتم استخدام الأصلية:', error);
+                }
+                
+                currentCardId++;
+                const card = createCard(currentCardId, compressedImageUrl, fileName);
+                document.getElementById('imagesGrid').appendChild(card);
+                
+                // حفظ البيانات
+                saveCard(currentCardId, compressedImageUrl, fileName);
+                
+                // تحديث الإحصائيات
+                updateStats();
+                
+            } catch (error) {
+                console.error('خطأ في إضافة بطاقة جديدة:', error);
+                showAlert('حدث خطأ في إضافة البطاقة', 'error');
+            }
+        }
+        
+        // حذف بطاقة
+        function deleteCard(cardId) {
+            if (confirm('هل تريد حذف هذه البطاقة؟')) {
+                const card = document.getElementById('card-' + cardId);
+                if (card) {
+                    try {
+                        // إزالة البطاقة من DOM
+                        card.remove();
+                        
+                        // إزالة من البيانات المحفوظة
+                        removeCard(cardId);
+                        
+                        // إزالة من البطاقات المحددة
+                        selectedCards.delete(cardId.toString());
+                        
+                        // تحديث الإحصائيات
+                        updateStats();
+                        
+                        showAlert('تم حذف البطاقة بنجاح');
+                        
+                    } catch (error) {
+                        console.error('خطأ في حذف البطاقة:', error);
+                        showAlert('حدث خطأ في حذف البطاقة', 'error');
+                    }
+                }
+            }
+        }
+        
+        // تحديث رمز الموديل
+        function updateCode(cardId, value) {
+            try {
+                const data = getData();
+                if (data[cardId]) {
+                    data[cardId].code = value;
+                    localStorage.setItem('productsData', JSON.stringify(data));
+                }
+            } catch (error) {
+                console.error('خطأ في تحديث الرمز:', error);
+            }
+        }
+        
+        // تحديث السعر
+        function updatePrice(cardId, value) {
+            try {
+                const data = getData();
+                if (data[cardId]) {
+                    data[cardId].price = value;
+                    localStorage.setItem('productsData', JSON.stringify(data));
+                }
+            } catch (error) {
+                console.error('خطأ في تحديث السعر:', error);
+            }
+        }
+        
+        // تحديد/إلغاء تحديد بطاقة
+        function toggleCardSelection(cardId, isSelected) {
+            const card = document.getElementById('card-' + cardId);
+            if (card) {
+                if (isSelected) {
+                    card.classList.add('selected');
+                    selectedCards.add(cardId.toString());
+                } else {
+                    card.classList.remove('selected');
+                    selectedCards.delete(cardId.toString());
+                }
+                updateStats();
+            }
+        }
+        
+        // تحديد/إلغاء تحديد الكل
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll').checked;
+            const cards = document.querySelectorAll('.image-card');
+            const checkboxes = document.querySelectorAll('.select-checkbox');
+            
+            selectedCards.clear();
+            
+            cards.forEach(card => {
+                const cardId = card.id.replace('card-', '');
+                if (selectAll) {
+                    card.classList.add('selected');
+                    selectedCards.add(cardId);
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll;
+            });
+            
+            updateStats();
+        }
+        
+        // دالة البحث عن طريق رمز الموديل - معدلة
+        function searchByCode(searchTerm) {
+            const cards = document.querySelectorAll('.image-card');
+            let found = false;
+            const searchTermClean = searchTerm.trim().toLowerCase();
+            
+            cards.forEach(card => {
+                const cardId = card.id.replace('card-', '');
+                const data = getData();
+                const item = data[cardId];
+                // استخدام طريقة متوافقة بدلاً من المشغل ?.
+                const code = (item && item.code) ? item.code.toLowerCase() : '';
+                
+                if (searchTermClean === '') {
+                    card.style.display = 'block';
+                    card.style.border = '';
+                    card.style.boxShadow = '';
+                } else if (code.indexOf(searchTermClean) > -1) {
+                    card.style.display = 'block';
+                    card.style.border = '3px solid #FF9800';
+                    card.style.boxShadow = '0 0 15px rgba(255, 152, 0, 0.3)';
+                    found = true;
+                } else {
+                    card.style.display = 'none';
+                    card.style.border = '';
+                    card.style.boxShadow = '';
+                }
+            });
+            
+            // إظهار رسالة إذا لم يتم العثور على نتائج
+            if (searchTermClean !== '' && !found) {
+                showAlert('لم يتم العثور على موديل بهذا الرمز', 'info');
+            }
+        }
+        
+        // فتح خيارات الواتساب
+        function openWhatsAppOptions() {
+            if (selectedCards.size === 0) {
+                showAlert('الرجاء تحديد بطاقات للإرسال', 'error');
+                return;
+            }
+            
+            document.getElementById('whatsappModal').style.display = 'flex';
+            selectWhatsAppOption('text'); // الاختيار الافتراضي
+        }
+        
+        // إغلاق نافذة الواتساب
+        function closeWhatsAppModal() {
+            document.getElementById('whatsappModal').style.display = 'none';
+            document.getElementById('phoneDetails').style.display = 'none';
+            document.getElementById('contactDetails').style.display = 'none';
+        }
+        
+        // اختيار خيار الواتساب
+        function selectWhatsAppOption(option) {
+            selectedWhatsAppOption = option;
+            
+            // إزالة التحديد من جميع الخيارات
+            document.getElementById('optionText').classList.remove('selected');
+            document.getElementById('optionPhone').classList.remove('selected');
+            document.getElementById('optionContact').classList.remove('selected');
+            
+            // إضافة التحديد للخيار المختار
+            const optionId = 'option' + option.charAt(0).toUpperCase() + option.slice(1);
+            if (document.getElementById(optionId)) {
+                document.getElementById(optionId).classList.add('selected');
+            }
+            
+            // إظهار أو إخفاء تفاصيل الرقم أو جهات الاتصال
+            document.getElementById('phoneDetails').style.display = 'none';
+            document.getElementById('contactDetails').style.display = 'none';
+            
+            if (option === 'phone') {
+                document.getElementById('phoneDetails').style.display = 'flex';
+            } else if (option === 'contact') {
+                document.getElementById('contactDetails').style.display = 'flex';
+            }
+        }
+        
+        // إرسال عبر واتساب
+        async function sendViaWhatsApp() {
+            if (selectedCards.size === 0) {
+                showAlert('الرجاء تحديد بطاقات للإرسال', 'error');
+                return;
+            }
+
+            const data = getData();
+            let message = '📋 *الموديلات المطلوبة*\n\n';
+            let hasData = false;
+
+            // جمع البيانات المحددة
+            const selectedArray = Array.from(selectedCards);
+            for (let i = 0; i < selectedArray.length; i++) {
+                const cardId = selectedArray[i];
+                const item = data[cardId];
+                if (item) {
+                    const code = item.code || 'غير محدد';
+                    const price = item.price || 'غير محدد';
+                    message += `*${i + 1}.* ${code} - ${price}\n`;
+                    hasData = true;
+                }
+            }
+
+            if (!hasData) {
+                showAlert('لا توجد بيانات للإرسال', 'error');
+                return;
+            }
+
+            message += `\n📊 *الإجمالي:* ${selectedCards.size} موديل`;
+            message += `\n📅 *التاريخ:* ${new Date().toLocaleDateString('ar-EG')}`;
+            message += `\n\nتم إنشاء التقرير عبر تطبيق الموديلات المحسن`;
+
+            let phoneNumber = '';
+            
+            if (selectedWhatsAppOption === 'text') {
+                // إرسال كرسالة نصية فقط
+                const encodedMessage = encodeURIComponent(message);
+                const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+                window.open(whatsappUrl, '_blank');
+                showAlert('جاري فتح واتساب لإرسال الرسالة...', 'info');
+                
+            } else if (selectedWhatsAppOption === 'phone' || selectedWhatsAppOption === 'contact') {
+                // إرسال مباشر إلى رقم
+                if (selectedWhatsAppOption === 'contact') {
+                    phoneNumber = document.getElementById('selectedContactPhone').value.trim();
+                } else {
+                    phoneNumber = document.getElementById('phoneNumber').value.trim();
+                }
+                
+                if (!phoneNumber) {
+                    showAlert('الرجاء إدخال رقم واتساب صحيح', 'error');
+                    return;
+                }
+                
+                const cleanPhone = phoneNumber.replace(/[^\d]/g, '');
+                
+                if (cleanPhone.length < 10) {
+                    showAlert('الرجاء إدخال رقم واتساب صحيح', 'error');
+                    return;
+                }
+                
+                const encodedMessage = encodeURIComponent(message);
+                const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+                
+                window.open(whatsappUrl, '_blank');
+                showAlert(`جاري فتح واتساب للإرسال إلى الرقم ${cleanPhone}...`, 'info');
+            }
+            
+            closeWhatsAppModal();
+        }
+        
+        // اختيار جهة اتصال من الهاتف
+        async function pickContactFromPhone() {
+            try {
+                // التأكد من دعم واجهة جهات الاتصال
+                if (!('contacts' in navigator && 'ContactsManager' in window)) {
+                    showAlert('متصفحك لا يدعم اختيار جهات الاتصال. يرجى إدخال الرقم يدوياً.', 'error');
+                    pickContactFallback();
+                    return;
+                }
+                
+                // طلب الإذن لاختيار جهة اتصال
+                const contacts = await navigator.contacts.select(
+                    ['name', 'tel'],
+                    { multiple: false }
+                );
+                
+                if (contacts && contacts.length > 0) {
+                    const contact = contacts[0];
+                    const name = contact.name ? contact.name.join(' ') : 'جهة اتصال';
+                    const phone = contact.tel ? contact.tel[0] : '';
+                    
+                    if (phone) {
+                        document.getElementById('selectedContactName').value = name;
+                        document.getElementById('selectedContactPhone').value = phone;
+                        document.getElementById('phoneNumber').value = phone.replace(/\D/g, '');
+                        showAlert(`تم اختيار جهة الاتصال: ${name}`, 'info');
+                    } else {
+                        showAlert('جهة الاتصال المختارة لا تحتوي على رقم هاتف', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('خطأ في اختيار جهة الاتصال:', error);
+                showAlert('حدث خطأ في اختيار جهة الاتصال. تأكد من منح الإذن.', 'error');
+                pickContactFallback();
+            }
+        }
+        
+        // بديل لمتصفحات لا تدعم واجهة جهات الاتصال
+        function pickContactFallback() {
+            const phone = prompt('الرجاء إدخال رقم الهاتف (مع مفتاح الدولة، مثال: 9665XXXXXXXX):');
+            if (phone && phone.trim() !== '') {
+                const name = prompt('الرجاء إدخال اسم جهة الاتصال (اختياري):');
+                document.getElementById('selectedContactName').value = name || 'جهة اتصال';
+                document.getElementById('selectedContactPhone').value = phone;
+                document.getElementById('phoneNumber').value = phone.replace(/\D/g, '');
+                showAlert('تم إضافة جهة الاتصال بنجاح', 'info');
+            }
+        }
+        
+        // فتح الكاميرا
+        async function openCamera() {
+            try {
+                document.getElementById('cameraModal').style.display = 'flex';
+                
+                const constraints = {
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
+                
+                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                document.getElementById('cameraVideo').srcObject = cameraStream;
+                
+            } catch (error) {
+                console.error('خطأ في فتح الكاميرا:', error);
+                showAlert('تعذر فتح الكاميرا. تأكد من السماح باستخدام الكاميرا.', 'error');
+                closeCamera();
+            }
+        }
+        
+        // التقاط صورة بالكاميرا
+        function capturePhoto() {
+            try {
+                const video = document.getElementById('cameraVideo');
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                const imageUrl = canvas.toDataURL('image/jpeg', 0.9);
+                
+                // إضافة البطاقة
+                addNewCard(imageUrl, `كاميرا_${new Date().getTime()}.jpg`);
+                
+                // إغلاق الكاميرا
+                closeCamera();
+                
+                showAlert('تم التقاط الصورة بنجاح!');
+                
+            } catch (error) {
+                console.error('خطأ في التقاط الصورة:', error);
+                showAlert('حدث خطأ في التقاط الصورة', 'error');
+                closeCamera();
+            }
+        }
+        
+        // إغلاق الكاميرا
+        function closeCamera() {
+            document.getElementById('cameraModal').style.display = 'none';
+            
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+        }
+        
+        // مسح جميع البيانات
+        function clearAll() {
+            if (confirm('هل تريد مسح جميع البيانات؟ لا يمكن التراجع عن هذا الإجراء.')) {
+                try {
+                    document.getElementById('imagesGrid').innerHTML = '';
+                    localStorage.removeItem('productsData');
+                    localStorage.removeItem('currentCardId');
+                    currentCardId = 0;
+                    selectedCards.clear();
+                    updateStats();
+                    showAlert('تم مسح جميع البيانات بنجاح');
+                    
+                } catch (error) {
+                    console.error('خطأ في مسح البيانات:', error);
+                    showAlert('حدث خطأ في مسح البيانات', 'error');
+                }
+            }
+        }
+        
+        // عرض رسالة تنبيه
+        function showAlert(message, type = 'success') {
+            // إزالة أي رسائل سابقة
+            const oldAlert = document.querySelector('.alert');
+            if (oldAlert) oldAlert.remove();
+            
+            const alert = document.createElement('div');
+            alert.className = `alert ${type}`;
+            
+            let icon = '✅';
+            if (type === 'error') icon = '❌';
+            if (type === 'info') icon = 'ℹ️';
+            
+            alert.innerHTML = `${icon} ${message}`;
+            
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 3000);
+        }
+        
+        // حفظ بطاقة - معدلة لحل مشكلة التخزين
+        function saveCard(cardId, imageUrl, fileName) {
+            try {
+                const data = getData();
+                data[cardId] = {
+                    imageUrl: imageUrl,
+                    fileName: fileName,
+                    code: '',
+                    price: '',
+                    date: new Date().toISOString()
+                };
+                
+                // محاولة الحفظ مع معالجة الأخطاء
+                localStorage.setItem('productsData', JSON.stringify(data));
+                
+            } catch (error) {
+                console.error('خطأ في حفظ البطاقة:', error);
+                
+                // إذا كان الخطأ بسبب امتلاء التخزين
+                if (error.name === 'QuotaExceededError') {
+                    showAlert('مساحة التخزين ممتلئة. جاري تنظيف البيانات القديمة...', 'error');
+                    
+                    // محاولة تنظيف بعض البيانات القديمة
+                    try {
+                        const data = getData();
+                        const keys = Object.keys(data);
+                        if (keys.length > 10) {
+                            // حذف أقدم 5 بطاقات
+                            const sortedKeys = keys.sort((a, b) => {
+                                return new Date(data[a].date) - new Date(data[b].date);
+                            });
+                            
+                            for (let i = 0; i < Math.min(5, sortedKeys.length); i++) {
+                                delete data[sortedKeys[i]];
+                            }
+                            
+                            localStorage.setItem('productsData', JSON.stringify(data));
+                            showAlert('تم تنظيف بعض البيانات القديمة. حاول مرة أخرى.', 'info');
+                        }
+                    } catch (cleanError) {
+                        console.error('خطأ في تنظيف التخزين:', cleanError);
+                        showAlert('لا يمكن حفظ البيانات. مساحة التخزين ممتلئة.', 'error');
+                    }
+                } else {
+                    showAlert('حدث خطأ في حفظ البطاقة', 'error');
+                }
+            }
+        }
+        
+        // إزالة بطاقة
+        function removeCard(cardId) {
+            try {
+                const data = getData();
+                delete data[cardId];
+                localStorage.setItem('productsData', JSON.stringify(data));
+            } catch (error) {
+                console.error('خطأ في إزالة البطاقة:', error);
+            }
+        }
+        
+        // حفظ البيانات
+        function saveData() {
+            try {
+                const data = getData();
+                localStorage.setItem('productsData', JSON.stringify(data));
+                localStorage.setItem('currentCardId', currentCardId.toString());
+            } catch (error) {
+                console.error('خطأ في حفظ البيانات:', error);
+            }
+        }
+        
+        // الحصول على البيانات
+        function getData() {
+            try {
+                const saved = localStorage.getItem('productsData');
+                return saved ? JSON.parse(saved) : {};
+            } catch (error) {
+                console.error('خطأ في قراءة البيانات:', error);
+                return {};
+            }
+        }
+        
+        // تحميل البيانات المحفوظة
+        function loadData() {
+            try {
+                const data = getData();
+                const savedId = localStorage.getItem('currentCardId');
+                
+                if (savedId) {
+                    currentCardId = parseInt(savedId) || 0;
+                }
+                
+                // إعادة بناء البطاقات
+                Object.keys(data).forEach(cardId => {
+                    const item = data[cardId];
+                    if (item && item.imageUrl) {
+                        const card = createCard(cardId, item.imageUrl, item.fileName);
+                        
+                        // تعبئة حقلي الموديل والسعر إذا كانا موجودين
+                        const codeInput = card.querySelector('.model-input');
+                        const priceInput = card.querySelector('.price-input');
+                        
+                        if (item.code && codeInput) {
+                            codeInput.value = item.code;
+                        }
+                        if (item.price && priceInput) {
+                            priceInput.value = item.price;
+                        }
+                        
+                        document.getElementById('imagesGrid').appendChild(card);
+                    }
+                });
+                
+                updateStats();
+                
+            } catch (error) {
+                console.error('خطأ في تحميل البيانات:', error);
+                showAlert('حدث خطأ في تحميل البيانات المحفوظة', 'error');
+            }
+        }
+        
+        // تهيئة التطبيق عند التحميل
+        window.onload = function() {
+            loadData();
+            
+            // إغلاق النوافذ عند النقر خارجها
+            document.getElementById('whatsappModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeWhatsAppModal();
+                }
+            });
+            
+            document.getElementById('cameraModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeCamera();
+                }
+            });
+            
+            // إغلاق النوافذ بمفتاح ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeWhatsAppModal();
+                    closeCamera();
+                }
+            });
+        };
+    </script>
+</body>
+</html>
